@@ -46,7 +46,7 @@ namespace odeint {
  */
 
 
-template< class Value,class Time_type = decltype (std::abs(std::declval<Value>())),  class Coefficients = default_rosenbrock_coefficients< Value > , class Resizer = initially_resizer >
+template< class Value,class Time_type = decltype (std::abs(std::declval<Value>())),  class Coefficients = default_rosenbrock_coefficients< decltype (std::abs(std::declval<Value>())) > , class Resizer = initially_resizer >
 class rosenbrock4_Eigen
 {
 public:
@@ -98,13 +98,16 @@ public:
 
         const size_t n = x.size();
 
-        m_resizer.adjust_size( x , detail::bind( &stepper_type::template resize_impl<state_type> , detail::ref( *this ) , detail::_1 ) );
+        //m_resizer.adjust_size( x , detail::bind( &stepper_type::template resize_impl<state_type> , detail::ref( *this ) , detail::_1 ) );
 
         deriv_func( x , m_dxdt , t );
         jacobi_func( x , m_jac , t , m_dfdt );
 
         m_jac *= -1.0;
-        m_jac += 1.0 / m_coef.gamma / dt * state_type::Identity(n);
+        {
+            size_t size = m_jac.size();
+            m_jac += 1.0 / m_coef.gamma / dt * state_type::Identity(size,size);
+        }
         // Eigen Full Pivoted LU Factorisation type
         Eigen::FullPivLU<state_type> lu(m_jac);
 
@@ -167,14 +170,14 @@ public:
     template< class System >
     void do_step( System system , const state_type &x , time_type t , state_type &xout , time_type dt )
     {
-        m_x_err_resizer.adjust_size( x , detail::bind( &stepper_type::template resize_x_err<state_type> , detail::ref( *this ) , detail::_1 ) );
+        //m_x_err_resizer.adjust_size( x , detail::bind( &stepper_type::template resize_x_err<state_type> , detail::ref( *this ) , detail::_1 ) );
         do_step( system , x , t , xout , dt , m_x_err );
     }
 
     template< class System >
     void do_step( System system , state_type &x , time_type t , time_type dt )
     {
-        m_x_err_resizer.adjust_size( x , detail::bind( &stepper_type::template resize_x_err<state_type> , detail::ref( *this ) , detail::_1 ) );
+        //m_x_err_resizer.adjust_size( x , detail::bind( &stepper_type::template resize_x_err<state_type> , detail::ref( *this ) , detail::_1 ) );
         do_step( system , x , t , dt , m_x_err );
     }
 

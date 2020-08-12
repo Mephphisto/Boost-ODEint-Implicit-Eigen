@@ -47,10 +47,8 @@ public:
     typedef Stepper stepper_type;
     typedef double value_type;
     typedef typename stepper_type::state_type state_type;
-    typedef typename stepper_type::wrapped_state_type wrapped_state_type;
     typedef typename stepper_type::time_type time_type;
     typedef typename stepper_type::deriv_type deriv_type;
-    typedef typename stepper_type::wrapped_deriv_type wrapped_deriv_type;
     typedef typename stepper_type::resizer_type resizer_type;
     typedef controlled_stepper_tag stepper_category;
 
@@ -83,7 +81,7 @@ public:
         for( size_t i=0 ; i<n ; ++i )
         {
             sk = m_atol + m_rtol * max BOOST_PREVENT_MACRO_SUBSTITUTION ( abs( xold[i] ) , abs( x[i] ) );
-            err += xerr[i] * xerr[i] / sk / sk;
+            err += std::abs(xerr[i]) * std::abs(xerr[i]) / sk / sk;
         }
         return sqrt( err / value_type( n ) );
     }
@@ -101,10 +99,10 @@ public:
     try_step( System sys , state_type &x , time_type &t , time_type &dt )
     {
         m_xnew_resizer.adjust_size( x , detail::bind( &controller_type::template resize_m_xnew< state_type > , detail::ref( *this ) , detail::_1 ) );
-        boost::numeric::odeint::controlled_step_result res = try_step( sys , x , t , m_xnew.m_v , dt );
+        boost::numeric::odeint::controlled_step_result res = try_step( sys , x , t , m_xnew , dt );
         if( res == success )
         {
-            boost::numeric::odeint::copy( m_xnew.m_v , x );
+            boost::numeric::odeint::copy( m_xnew  , x );
         }
         return res;
     }
@@ -130,8 +128,8 @@ public:
 
         m_xerr_resizer.adjust_size( x , detail::bind( &controller_type::template resize_m_xerr< state_type > , detail::ref( *this ) , detail::_1 ) );
 
-        m_stepper.do_step( sys , x , t , xout , dt , m_xerr.m_v );
-        value_type err = std::abs(error( xout , x , m_xerr.m_v ));
+        m_stepper.do_step( sys , x , t , xout , dt , m_xerr);
+        value_type err = std::abs(error( xout , x , m_xerr));
 
         value_type fac = max BOOST_PREVENT_MACRO_SUBSTITUTION (
             fac2 , min BOOST_PREVENT_MACRO_SUBSTITUTION (
@@ -206,21 +204,23 @@ protected:
     template< class StateIn >
     bool resize_m_xerr( const StateIn &x )
     {
-        return adjust_size_by_resizeability( m_xerr , x , typename is_resizeable<state_type>::type() );
+        m_xerr.resize(x.size());
+        return true;
     }
 
     template< class StateIn >
     bool resize_m_xnew( const StateIn &x )
     {
-        return adjust_size_by_resizeability( m_xnew , x , typename is_resizeable<state_type>::type() );
+        m_xnew.resize(x.size());
+        return true;
     }
 
 
     stepper_type m_stepper;
     resizer_type m_xerr_resizer;
     resizer_type m_xnew_resizer;
-    wrapped_state_type m_xerr;
-    wrapped_state_type m_xnew;
+    state_type m_xerr;
+    state_type m_xnew;
     value_type m_atol , m_rtol;
     time_type m_max_dt;
     bool m_first_step;
