@@ -170,14 +170,14 @@ public:
     template< class System >
     void do_step( System system , const state_type &x , time_type t , state_type &xout , time_type dt )
     {
-        //m_x_err_resizer.adjust_size( x , detail::bind( &stepper_type::template resize_x_err<state_type> , detail::ref( *this ) , detail::_1 ) );
+        m_x_err_resizer.adjust_size( x , detail::bind( &stepper_type::template resize_x_err<state_type> , detail::ref( *this ) , detail::_1 ) );
         do_step( system , x , t , xout , dt , m_x_err );
     }
 
     template< class System >
     void do_step( System system , state_type &x , time_type t , time_type dt )
     {
-        //m_x_err_resizer.adjust_size( x , detail::bind( &stepper_type::template resize_x_err<state_type> , detail::ref( *this ) , detail::_1 ) );
+        m_x_err_resizer.adjust_size( x , detail::bind( &stepper_type::template resize_x_err<state_type> , detail::ref( *this ) , detail::_1 ) );
         do_step( system , x , t , dt , m_x_err );
     }
 
@@ -207,14 +207,14 @@ public:
 
 
     template< class StateType >
-    void adjust_size( const StateType &x )
+    inline void adjust_size( const StateType &x )
     {
         resize_impl( x );
         resize_x_err( x );
     }
 
     template< class StateIn >
-    bool resize_impl( const StateIn &x )
+    inline bool resize_impl( const StateIn &x )
     {
         size_t size = x.size();
         m_dxdt.resize(size);
@@ -232,8 +232,8 @@ public:
         return true;
     }
 
-    template< class StateIn >
-    bool resize_x_err( const StateIn &x )
+     template < class StateIn >
+     inline bool resize_x_err( const StateIn &x )
     {
         m_x_err.resize(x.size());
         return true;
