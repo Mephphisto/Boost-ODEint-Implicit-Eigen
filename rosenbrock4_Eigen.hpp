@@ -74,7 +74,10 @@ public:
       m_g1() , m_g2() , m_g3() , m_g4() , m_g5() ,
       m_cont3() , m_cont4() , m_xtmp() , m_x_err() ,
       m_coef()
-    { }
+
+    {
+        initialized = false;
+    }
 
 
     order_type order() const { return stepper_order; } 
@@ -93,7 +96,7 @@ public:
         const size_t n = x.size();
 
         //m_resizer.adjust_size( x , detail::bind( &stepper_type::template resize_impl<state_type> , detail::ref( *this ) , detail::_1 ) );
-        adjust_size(x);
+        if (!initialized) adjust_size(x);
 
         deriv_func( x , m_dxdt , t );
         jacobi_func( x , m_jac , t , m_dfdt );
@@ -246,7 +249,7 @@ private:
     state_type m_cont3 , m_cont4;
     state_type m_xtmp;
     state_type m_x_err;
-
+    bool initialized;
     const rosenbrock_coefficients m_coef;
 };
 
