@@ -125,9 +125,7 @@ public:
         using std::pow;
 
         static const value_type safe = 0.9 , fac1 = 5.0 , fac2 = 1.0 / 6.0;
-
-        m_xerr_resizer.adjust_size( x , detail::bind( &controller_type::template resize_m_xerr< state_type > , detail::ref( *this ) , detail::_1 ) );
-
+        m_xerr.resize(x.size());
         m_stepper.do_step( sys , x , t , xout , dt , m_xerr);
         value_type err = std::abs(error( xout , x , m_xerr));
 

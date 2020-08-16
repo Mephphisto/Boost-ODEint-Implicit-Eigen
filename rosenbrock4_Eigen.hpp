@@ -112,7 +112,7 @@ public:
         for( size_t i=0 ; i<n ; ++i )
             m_g1[i] = m_dxdt[i] + dt * m_coef.d1 * m_dfdt[i];
         // Eigen LU Solve
-        m_g1 = lu.solve(m_g1);
+        m_g1 = lu.solve(m_g1).eval();
 
 
         for( size_t i=0 ; i<n ; ++i )
@@ -120,7 +120,7 @@ public:
         deriv_func( m_xtmp , m_dxdtnew , t + m_coef.c2 * dt );
         for( size_t i=0 ; i<n ; ++i )
             m_g2[i] = m_dxdtnew[i] + dt * m_coef.d2 * m_dfdt[i] + m_coef.c21 * m_g1[i] / dt;
-        m_g2 = lu.solve(m_g2);
+        m_g2 = lu.solve(m_g2).eval();
 
 
         for( size_t i=0 ; i<n ; ++i )
@@ -128,14 +128,14 @@ public:
         deriv_func( m_xtmp , m_dxdtnew , t + m_coef.c3 * dt );
         for( size_t i=0 ; i<n ; ++i )
             m_g3[i] = m_dxdtnew[i] + dt * m_coef.d3 * m_dfdt[i] + ( m_coef.c31 * m_g1[i] + m_coef.c32 * m_g2[i] ) / dt;
-        m_g3 = lu.solve(m_g3);
+        m_g3 = lu.solve(m_g3).eval();
 
         for( size_t i=0 ; i<n ; ++i )
             m_xtmp[i] = x[i] + m_coef.a41 * m_g1[i] + m_coef.a42 * m_g2[i] + m_coef.a43 * m_g3[i];
         deriv_func( m_xtmp , m_dxdtnew , t + m_coef.c4 * dt );
         for( size_t i=0 ; i<n ; ++i )
             m_g4[i] = m_dxdtnew[i] + dt * m_coef.d4 * m_dfdt[i] + ( m_coef.c41 * m_g1[i] + m_coef.c42 * m_g2[i] + m_coef.c43 * m_g3[i] ) / dt;
-        m_g4 = lu.solve(m_g4);
+        m_g4 = lu.solve(m_g4).eval();
 
 
         for( size_t i=0 ; i<n ; ++i )
@@ -143,15 +143,14 @@ public:
         deriv_func( m_xtmp , m_dxdtnew , t + dt );
         for( size_t i=0 ; i<n ; ++i )
             m_g5[i] = m_dxdtnew[i] + ( m_coef.c51 * m_g1[i] + m_coef.c52 * m_g2[i] + m_coef.c53 * m_g3[i] + m_coef.c54 * m_g4[i] ) / dt;
-        m_g5 = lu.solve(m_g5);
+        m_g5 = lu.solve(m_g5).eval();
 
         for( size_t i=0 ; i<n ; ++i )
             m_xtmp[i] += m_g5[i];
         deriv_func( m_xtmp , m_dxdtnew , t + dt );
         for( size_t i=0 ; i<n ; ++i )
             xerr[i] = m_dxdtnew[i] + ( m_coef.c61 * m_g1[i] + m_coef.c62 * m_g2[i] + m_coef.c63 * m_g3[i] + m_coef.c64 * m_g4[i] + m_coef.c65 * m_g5[i] ) / dt;
-        xerr = lu.solve(xerr);
-
+        xerr = lu.solve(xerr).eval();
         for( size_t i=0 ; i<n ; ++i )
             xout[i] = m_xtmp[i] + xerr[i];
     }
