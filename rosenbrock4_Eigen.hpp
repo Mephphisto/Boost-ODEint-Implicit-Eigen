@@ -62,10 +62,6 @@ public:
     typedef stepper_tag stepper_category;
     typedef unsigned short order_type;
 
-    typedef state_wrapper< state_type > wrapped_state_type;
-    typedef state_wrapper< deriv_type > wrapped_deriv_type;
-    typedef state_wrapper< matrix_type > wrapped_matrix_type;
-
     typedef rosenbrock4_Eigen< Value , Coefficients , Resizer > stepper_type;
 
     const static order_type stepper_order = rosenbrock_coefficients::stepper_order;
@@ -94,11 +90,10 @@ public:
         deriv_func_type &deriv_func = sys.first;
         jacobi_func_type &jacobi_func = sys.second;
 
-
-
         const size_t n = x.size();
 
         //m_resizer.adjust_size( x , detail::bind( &stepper_type::template resize_impl<state_type> , detail::ref( *this ) , detail::_1 ) );
+        adjust_size(x);
 
         deriv_func( x , m_dxdt , t );
         jacobi_func( x , m_jac , t , m_dfdt );
@@ -228,7 +223,7 @@ public:
         m_g5.resize(size);
         m_cont3.resize(size);
         m_cont4.resize(size);
-        m_jac.resize(size);
+        m_jac.resize(size,size);
         return true;
     }
 
