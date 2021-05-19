@@ -32,16 +32,15 @@ namespace boost {
     namespace numeric {
         namespace odeint {
 
-            template< class ValueType, class Time_type = decltype (std::abs(std::declval<ValueType>()))>
-            class implicit_euler_Eigen
-            {
+            template<class ValueType, class Time_type = double>
+            class implicit_euler_Eigen {
 
             public:
 
                 typedef ValueType value_type;
                 typedef Time_type time_type;
-                typedef Eigen::VectorX< value_type > state_type;
-                typedef Eigen::MatrixX< value_type > matrix_type;
+                typedef Eigen::VectorX<value_type> state_type;
+                typedef Eigen::MatrixX<value_type> matrix_type;
                 typedef stepper_tag stepper_category;
                 typedef implicit_euler_Eigen< ValueType> stepper_type;
 
